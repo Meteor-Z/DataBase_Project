@@ -1,11 +1,15 @@
+mod management;
+mod number;
+mod tools;
 
 fn main() {
-    println!("Hello World!");
-    welcome();
+
+    management::first_management();
+    let a = tools::scan();
 }
 
-fn scan() -> String {
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line).unwrap();
-    line.trim().to_string()
+// 测试一下数据库能否正常使用
+#[test]
+fn test() {
+    
 }
