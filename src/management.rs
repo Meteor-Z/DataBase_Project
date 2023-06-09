@@ -2,6 +2,7 @@ use crate::domain::{Student, Teacher};
 use crate::number;
 use crate::number::INPUT_ERR_MESSAGE;
 use crate::tools;
+use chrono::NaiveTime;
 use mysql::prelude::Queryable;
 use mysql::prelude::*;
 use mysql::*;
@@ -307,8 +308,71 @@ fn admin_manage_one_unique_teacher_count() {
     for (key, val) in &teacher_count {
         println!("{}\t{}", key, val);
     }
-    
+    println!();
 }
-fn admin_manage_two_unique_average_teacher_salayr() {}
-fn admin_manage_three_list_by_class() {}
-fn admin_manage_four_student_list() {}
+fn admin_manage_two_unique_average_teacher_salayr() {
+    let sql: String = String::from("select * from teacher");
+
+    let mut teacher_count: HashMap<String, i32> = HashMap::new();
+    let mut teacher_slary: HashMap<String, f64> = HashMap::new();
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    connect.query_iter(sql).unwrap().for_each(|row| {
+        let r: (i32, String, i32, String, f64) = from_row(row.unwrap());
+        let profession: String = r.3.clone();
+        for class in profession.split_whitespace() {
+            let number = teacher_count.entry(class.to_string()).or_insert(0);
+            *number += 1;
+
+            let slary_count = teacher_slary.entry(class.to_string()).or_insert(0.0);
+            *slary_count += r.4;
+        }
+    });
+    println!("以下是相关信息");
+    for (key, value) in &teacher_count {
+        println!(
+            "{}\t{}",
+            key,
+            *teacher_slary.get(key).unwrap() / ((*value) as f64)
+        );
+    }
+}
+fn admin_manage_three_list_by_class() {
+    let class_number = tools::scan().parse::<i32>();
+    if class_number.is_err() {
+        println!("输入错误，请重新输入");
+        return;
+    }
+    let sql: String = String::from("select * from student");
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+
+    println!("以下是相关信息");
+
+    connect.query_iter(sql).unwrap().for_each(|row| {
+        let r: (String, String, i32, i32, i32, String) = from_row(row.unwrap());
+        let user_id = &r.0;
+        let user_name = &r.1;
+        let user_sex = &r.2;
+        let user_age = &r.3;
+        let user_class = &r.4;
+        let user_password = &r.5;
+        println!(
+            "{} {} {} {} {} {}",
+            user_id, user_name, user_sex, user_age, user_class, user_password
+        );
+    });
+}
+fn admin_manage_four_student_list() {
+    println!("请输入学号");
+    let user_id = tools::scan();
+    let sql: String = format!("select score from class where student_id = '{}'", user_id);
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut score = 0;
+    connect.query_iter(sql).unwrap().for_each(|row| {
+        let r: i32 = from_row(row.unwrap());
+        score += r;
+    });
+    println!("学分为:{}", score);
+}
