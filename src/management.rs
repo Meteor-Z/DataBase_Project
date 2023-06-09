@@ -374,5 +374,5 @@ fn admin_manage_four_student_list() {
         let r: i32 = from_row(row.unwrap());
         score += r;
     });
-    println!("学分为:{}", score);
+    println!("学分为:{}\t", score);
 }
