@@ -1,3 +1,4 @@
+mod domain;
 mod management;
 mod number;
 mod tools;
@@ -13,7 +14,7 @@ fn main() {
         }
 
         let number = a.unwrap();
-        if  number < 1 || number > 3 {
+        if number < 1 || number > 4 {
             println!("{}", number::INPUT_ERR_MESSAGE);
             continue;
         }
@@ -26,6 +27,9 @@ fn main() {
             }
             3 => {
                 management::student_manage();
+            }
+            4 => {
+                return;
             }
             _ => {}
         }

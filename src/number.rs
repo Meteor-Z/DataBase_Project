@@ -7,3 +7,4 @@ pub static SUPER_ADMIN_PASSWORD: &str = "123456";
 
 pub static ADMIN_USERNAME: &str = "lzc";
 pub static ADMIN_PASSWORD: &str = "114514";
+
