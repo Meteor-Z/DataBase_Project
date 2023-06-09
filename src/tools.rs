@@ -6,7 +6,7 @@ pub fn scan() -> String {
 }
 
 pub fn scanf_username_and_password() -> (String, String) {
-    println!("请输入你的账号");
+    println!("请输入你的学号或者工号");
     let user_name = scan();
     println!("请输入你的密码");
     let password = scan();
