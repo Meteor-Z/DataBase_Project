@@ -4,11 +4,6 @@ pub struct Teacher {
     pub gender: i32,        // 性别
     pub profession: String, // 职称
     pub salary: f64,
-} // 工
-pub struct Class {
-    pub id: String,   // 课程号
-    pub name: String, // 课程名
-    pub credit: f64,  // 学分
 }
 pub struct Student {
     pub id: String,       // 学号

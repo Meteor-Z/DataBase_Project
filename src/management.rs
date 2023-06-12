@@ -1,14 +1,12 @@
 use crate::domain::{Student, Teacher};
 use crate::number;
 use crate::number::INPUT_ERR_MESSAGE;
-use crate::tools;
-use chrono::NaiveTime;
+use crate::tools::{self, get_connect};
 use mysql::prelude::Queryable;
-use mysql::prelude::*;
+
 use mysql::*;
 
 use std::collections::HashMap;
-use std::fmt::format;
 pub fn first_management() {
     unsafe {
         if number::IS_MANAGE_FIST_TIME {
@@ -111,8 +109,7 @@ pub fn student_manage() {
     let mut user = Student::new();
     let mut have_this_user: bool = false;
 
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
 
     connect.query_iter(sql).unwrap().for_each(|row| {
         let _r: (String, String, i32, i32, i32, String) = from_row(row.unwrap());
@@ -166,8 +163,7 @@ fn super_admin_manage_one_look_student_info() {
     let sql = format!("select * from student  where '{}'", user_id);
 
     let mut have_this_user: bool = false;
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     let mut user: Student = Student::new();
 
     connect.query_iter(sql).unwrap().for_each(|row| {
@@ -207,8 +203,7 @@ fn super_admin_manage_two_look_teacher_info() {
     let sql = format!("select * from teacher  where '{}'", user_id);
 
     let mut have_this_user: bool = false;
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     let mut user: Teacher = Teacher::new();
 
     connect.query_iter(sql).unwrap().for_each(|row| {
@@ -242,8 +237,7 @@ fn super_admin_manage_three_look_teacher_class() {
     let sql = format!("select * from teacher  where '{}'", user_id);
 
     let mut have_this_user: bool = false;
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     let mut user: Teacher = Teacher::new();
 
     connect.query_iter(sql).unwrap().for_each(|row| {
@@ -272,8 +266,7 @@ fn super_admin_manage_four_add_student() {
     let user_id = tools::scan();
     let sql = format!("select * from student  where id = '{}'", user_id);
     let mut have_this_user: bool = false;
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     connect.query_iter(sql).unwrap().for_each(|row| {
         let _r: (String, String, i32, i32, i32, String) = from_row(row.unwrap());
         have_this_user = true;
@@ -312,8 +305,8 @@ fn super_admin_manage_four_add_student() {
 fn admin_manage_one_unique_teacher_count() {
     let sql: String = String::from("select * from teacher");
     let mut teacher_count: HashMap<String, i32> = HashMap::new();
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+
+    let mut connect = get_connect();
     connect.query_iter(sql).unwrap().for_each(|row| {
         let r: (i32, String, i32, String, f64) = from_row(row.unwrap());
         let profession: String = r.3.clone();
@@ -333,8 +326,7 @@ fn admin_manage_two_unique_average_teacher_salayr() {
 
     let mut teacher_count: HashMap<String, i32> = HashMap::new();
     let mut teacher_slary: HashMap<String, f64> = HashMap::new();
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     connect.query_iter(sql).unwrap().for_each(|row| {
         let r: (i32, String, i32, String, f64) = from_row(row.unwrap());
         let profession: String = r.3.clone();
@@ -362,8 +354,7 @@ fn admin_manage_three_list_by_class() {
         return;
     }
     let sql: String = String::from("select * from student");
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
 
     println!("以下是相关信息");
 
@@ -385,8 +376,7 @@ fn admin_manage_four_student_list() {
     println!("请输入学号");
     let user_id = tools::scan();
     let sql: String = format!("select score from class where student_id = '{}'", user_id);
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let mut connect = get_connect();
     let mut score = 0;
     connect.query_iter(sql).unwrap().for_each(|row| {
         let r: i32 = from_row(row.unwrap());
@@ -408,10 +398,8 @@ fn student_manage_one_get_class(user_id: &str) {
         "select id from class where class_name = '{}' and student_id = '{}'",
         class, user_id
     );
-    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
-    let mut connect = pool.get_conn().unwrap(); // 获取连接
 
-    let mut score = 0;
+    let mut connect = get_connect();
     let mut have_this_class = false;
     connect.query_iter(sql).unwrap().for_each(|row| {
         let _r: String = from_row(row.unwrap());

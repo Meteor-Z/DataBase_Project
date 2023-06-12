@@ -1,3 +1,5 @@
+use mysql::PooledConn;
+
 // 简单的读取
 pub fn scan() -> String {
     let mut line = String::new();
@@ -12,4 +14,11 @@ pub fn scanf_username_and_password() -> (String, String) {
     let password = scan();
     
     (user_name, password)
+}
+pub fn get_connect() -> PooledConn {
+    
+    let pool = mysql::Pool::new(crate::number::URL).unwrap(); // 获取连接池
+    let connect = pool.get_conn().unwrap(); // 获取连接
+    connect
+
 }
