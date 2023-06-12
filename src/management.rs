@@ -115,15 +115,8 @@ pub fn student_manage() {
     let mut connect = pool.get_conn().unwrap(); // 获取连接
 
     connect.query_iter(sql).unwrap().for_each(|row| {
-        let r: (String, String, i32, i32, i32, String) = from_row(row.unwrap());
-        user = Student {
-            id: r.0.clone(),
-            name: r.1.clone(),
-            sex: r.2.clone(),
-            age: r.3.clone(),
-            class: r.4,
-            password: r.5.clone(),
-        };
+        let _r: (String, String, i32, i32, i32, String) = from_row(row.unwrap());
+        user = Student::new();
         have_this_user = true;
     });
     match have_this_user {
@@ -131,6 +124,31 @@ pub fn student_manage() {
         false => {
             println!("{}", INPUT_ERR_MESSAGE);
             return;
+        }
+    }
+    loop {
+        println!("选项 1 选课");
+        println!("选项 2 修改年龄");
+        println!("选项 3 修改密码");
+        println!("选项 4 退出");
+        let number = tools::scan().parse::<i32>();
+        if number.is_err() {
+            println!("{}", INPUT_ERR_MESSAGE);
+            return;
+        }
+        let number = number.unwrap();
+        if number < 1 || number > 4 {
+            println!("{}", INPUT_ERR_MESSAGE);
+            return;
+        }
+        match number {
+            1 => student_manage_one_get_class(&user_id),
+            2 => student_manage_two_change_age(&user_id),
+            3 => student_manage_three_change_password(&user_id),
+            4 => {
+                return;
+            }
+            _ => {}
         }
     }
 }
@@ -375,4 +393,81 @@ fn admin_manage_four_student_list() {
         score += r;
     });
     println!("学分为:{}\t", score);
+}
+/*
+   println!("选项 1 选课");
+   println!("选项 2 修改年龄");
+   println!("选项 3 修改密码");
+*/
+
+fn student_manage_one_get_class(user_id: &str) {
+    println!("请输入你选的课程");
+    let class: String = tools::scan();
+
+    let sql: String = format!(
+        "select id from class where class_name = '{}' and student_id = '{}'",
+        class, user_id
+    );
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+
+    let mut score = 0;
+    let mut have_this_class = false;
+    connect.query_iter(sql).unwrap().for_each(|row| {
+        let _r: String = from_row(row.unwrap());
+        have_this_class = true;
+    });
+    match have_this_class {
+        true => {
+            println!("你已经选择了这门课程，请不要重新选择了");
+            return;
+        }
+        false => {
+            let sql: String = format!(
+                "insert into class (class_name, student_id, score) values ('{}', '{}', 0)",
+                class, user_id
+            );
+            connect.query_iter(sql).unwrap().for_each(|_row| {});
+            println!("插入成功!");
+        }
+    }
+}
+fn student_manage_two_change_age(user_id: &str) {
+    println!("请输入你要修改的年龄");
+    let age: String = tools::scan();
+
+    let age = age.parse::<i32>();
+
+    if age.is_err() {
+        println!("你输入的数据不合法,请重新输入");
+        return;
+    }
+    let age = age.unwrap();
+    if age < 0 || age > 100 {
+        println!("你输入的数据太小或者太大，不合法，请重新输入");
+        return;
+    }
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let sql: String = format!("update student set age = {} where id = '{}'", age, user_id);
+    connect.query_iter(sql).unwrap().for_each(|_row| {});
+    println!("修改成功!");
+}
+fn student_manage_three_change_password(user_id: &str) {
+    println!("请输入你修改之后的密码");
+    let password_one: String = tools::scan();
+    println!("请重新输入一遍");
+    let password_two: String = tools::scan();
+    if password_one != password_two {
+        println!("两次输入不一致,拒绝修改密码！");
+        return;
+    }
+    let pool = mysql::Pool::new(number::URL).unwrap(); // 获取连接池
+    let mut connect = pool.get_conn().unwrap(); // 获取连接
+    let sql: String = format!(
+        "update student set password = '{}' where id = '{}'",
+        password_one, user_id
+    );
+    connect.query_iter(sql).unwrap().for_each(|_row| {});
+    println!("修改成功!");
 }
